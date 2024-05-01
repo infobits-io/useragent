@@ -155,6 +155,14 @@ var (
 		"Search Bot":          "bot",
 	}
 	browsers = [][]string{
+		// Browsers
+		{"DuckDuckGo", "ddg"},
+		{"Brave", "brave"},
+		{"Samsung Internet", "samsungbrowser"},
+		{"UC Browser", "ucbrowser"},
+		{"Opera Mini", "opera mini"},
+		{"Opera Mobile", "opera mobi"},
+		{"Yandex Browser", "yabrowser"},
 		{"Opera", "(opera)|(opr/)"},
 		{"Edge", "(edge)|(edg)"},
 		{"Chrome", "(chrome)|(crios)"},
