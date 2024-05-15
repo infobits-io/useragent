@@ -45,6 +45,9 @@ func Parse(userAgent string) *UserAgent {
 			break
 		}
 	}
+	if operatingSystem == "bot" {
+		bot = true
+	}
 
 	// Get the device type
 	deviceType := "desktop"
