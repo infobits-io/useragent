@@ -45,7 +45,9 @@ func Parse(userAgent string) *UserAgent {
 			break
 		}
 	}
-	if operatingSystem == "bot" {
+
+	// Check for bot indicators
+	if operatingSystem == "bot" || operatingSystem == "unknown" || device == "unknown" || browser == "unknown" {
 		bot = true
 	}
 
@@ -108,8 +110,11 @@ var (
 		{"Windows 10", "(Windows 10.0)|(Windows NT 10.0)"},
 		{"Windows NT 4.0", "(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)"},
 		{"Windows ME", "Windows ME"},
+		{"Windows Phone", "Windows Phone"},
 		{"Open BSD", "OpenBSD"},
-		{"Sun OS", "SunOS"},
+		{"FreeBSD", "FreeBSD"},
+		{"NetBSD", "NetBSD"},
+		{"Solaris", "Solaris|SunOS"},
 		{"Android", "Android"},
 		{"Ubuntu", "Ubuntu"},
 		{"Suse", "Suse"},
@@ -118,6 +123,8 @@ var (
 		{"Centos", "Centos"},
 		{"Linux", "(Linux)|(X11)"},
 		{"Mac OS", "(Mac_PowerPC)|(Macintosh)"},
+		{"Chrome OS", "CrOS"},
+		{"BlackBerry", "BlackBerry"},
 		{"QNX", "QNX"},
 		{"BeOS", "BeOS"},
 		{"OS/2", "OS/2"},
@@ -140,7 +147,9 @@ var (
 		"Windows NT 4.0":      "windows",
 		"Windows ME":          "windows",
 		"Open BSD":            "linux",
-		"Sun OS":              "linux",
+		"FreeBSD":             "linux",
+		"NetBSD":              "linux",
+		"Solaris":             "linux",
 		"Android":             "android",
 		"Ubuntu":              "ubuntu",
 		"Suse":                "suse",
@@ -149,6 +158,8 @@ var (
 		"Centos":              "centos",
 		"Linux":               "linux",
 		"Mac OS":              "macos",
+		"Chrome OS":           "chromeos",
+		"BlackBerry":          "blackberry",
 		"QNX":                 "qnx",
 		"BeOS":                "beos",
 		"OS/2":                "os2",
@@ -168,6 +179,12 @@ var (
 		{"Yandex", "yabrowser"},
 		{"360 Safe", "360ee"},
 		{"Vivaldi", "vivaldi"},
+		{"Tor Browser", "tor"},
+		{"Lynx", "lynx"},
+		{"SeaMonkey", "seamonkey"},
+		{"Pale Moon", "palemoon"},
+		{"Midori", "midori"},
+		{"Avast Secure Browser", "avast"},
 		{"Opera", "(opera)|(opr/)"},
 		{"Edge", "(edge)|(edg)"},
 		{"Chrome", "(chrome)|(crios)"},
