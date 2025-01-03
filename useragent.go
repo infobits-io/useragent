@@ -47,7 +47,7 @@ func Parse(userAgent string) *UserAgent {
 	}
 
 	// Check for bot indicators
-	if operatingSystem == "bot" || operatingSystem == "unknown" || device == "unknown" || browser == "unknown" {
+	if operatingSystem == "bot" || operatingSystem == "unknown" || device == "unknown" {
 		bot = true
 	}
 
