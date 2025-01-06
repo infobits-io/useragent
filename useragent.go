@@ -131,7 +131,7 @@ var (
 		{"iPhone", "iPhone"},
 		{"iPad", "iPad"},
 		{"iPod", "iPod"},
-		{"Search Bot", "(nuhk)|(Googlebot)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves/Teoma)|(ia_archiver)|(Baiduspider)|(FacebookExternalHit)|(Twitterbot)|(Riddler)|(LinkedInBot)|(Instagram)|(Pinterest)|(chatgpt)|(bingbot)|(duckduckbot)|(yandexbot)|(snapchat)|(discordbot)"},
+		{"Search Bot", "(nuhk)|(Googlebot)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves/Teoma)|(ia_archiver)|(Baiduspider)|(FacebookExternalHit)|(Twitterbot)|(Riddler)|(LinkedInBot)|(Instagram)|(Pinterest)|(chatgpt)|(openai)|(bingbot)|(duckduckbot)|(yandexbot)|(snapchat)|(discordbot)"},
 	}
 	deviceOperatingSystem = map[string]string{
 		"Windows 3.11":        "windows",
@@ -203,6 +203,8 @@ var (
 		{"[Bot] MSN", "msn"},
 		// Chat bots
 		{"[Bot] ChatGPT", "chatgpt"},
+		{"[Bot] OpenAI", "openai"},
+
 		// Social Media
 		{"[Bot] Facebook", "facebook"},
 		{"[Bot] Pinterest", "pinterest"},
