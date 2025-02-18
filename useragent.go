@@ -5,20 +5,21 @@ import (
 	"strings"
 )
 
-// TODO: add some client side checks for duckduckgo and brave
 type UserAgent struct {
-	userAgent       string
-	deviceType      string
-	browser         string
-	operatingSystem string
-	device          string
-	bot             bool
+	userAgent            string
+	deviceType           string
+	browser              string
+	operatingSystem      string
+	device               string
+	browserCheck         bool // check if the browser is valid
+	operatingSystemCheck bool // check if the operating system is valid
+	deviceCheck          bool // check if the device is valid
 }
 
 func Parse(userAgent string) *UserAgent {
 	// Get the browser
 	browser := "unknown"
-	bot := false
+	browserCheck := true
 	for _, browserMap := range browsers {
 		browserKey := browserMap[0]
 		browserRegExString := browserMap[1]
@@ -26,7 +27,7 @@ func Parse(userAgent string) *UserAgent {
 		if browserRegEx.MatchString(userAgent) {
 			browser = browserKey
 			if strings.HasPrefix(browserKey, "[Bot]") {
-				bot = true
+				browserCheck = false
 			}
 			break
 		}
@@ -47,8 +48,16 @@ func Parse(userAgent string) *UserAgent {
 	}
 
 	// Check for bot indicators
-	if operatingSystem == "bot" || operatingSystem == "unknown" || device == "unknown" {
-		bot = true
+	operatingSystemCheck := true
+	deviceCheck := true
+	if operatingSystem == "bot" || operatingSystem == "unknown" {
+		operatingSystemCheck = false
+	}
+	if browser == "unknown" {
+		browserCheck = false
+	}
+	if device == "unknown" {
+		deviceCheck = false
 	}
 
 	// Get the device type
@@ -59,39 +68,108 @@ func Parse(userAgent string) *UserAgent {
 		deviceType = "mobile"
 	}
 
-	// return object
+	// Return object
 	return &UserAgent{
-		userAgent:       userAgent,
-		deviceType:      deviceType,
-		browser:         browser,
-		device:          device,
-		operatingSystem: operatingSystem,
-		bot:             bot,
+		userAgent:            userAgent,
+		deviceType:           deviceType,
+		browser:              browser,
+		device:               device,
+		operatingSystem:      operatingSystem,
+		browserCheck:         browserCheck,
+		operatingSystemCheck: operatingSystemCheck,
+		deviceCheck:          deviceCheck,
 	}
 }
 
+// UserAgent returns the user agent string
 func (ua *UserAgent) UserAgent() string {
 	return ua.userAgent
 }
 
+// DeviceType returns the device type of the user agent
 func (ua *UserAgent) DeviceType() string {
 	return ua.deviceType
 }
 
+// Browser returns the browser of the user agent
 func (ua *UserAgent) Browser() string {
 	return ua.browser
 }
 
+// Device returns the device of the user agent
 func (ua *UserAgent) Device() string {
 	return ua.device
 }
 
+// OperatingSystem returns the operating system of the user agent
 func (ua *UserAgent) OperatingSystem() string {
 	return ua.operatingSystem
 }
 
-func (ua *UserAgent) IsBot() bool {
-	return ua.bot
+// IsBot returns true if the user agent is a bot.
+// If includeBrowser is true, the browser is also checked
+func (ua *UserAgent) IsBot(includeBrowser bool) bool {
+	return (!ua.browserCheck && includeBrowser) || !ua.operatingSystemCheck || !ua.deviceCheck
+}
+
+// IsValid returns true if the user agent is not a bot
+func (ua *UserAgent) IsValid() bool {
+	return ua.browserCheck && ua.operatingSystemCheck && ua.deviceCheck
+}
+
+// IsBrowserValid returns true if the user agent's browser is valid
+func (ua *UserAgent) IsBrowserValid() bool {
+	return ua.browserCheck
+}
+
+// IsOperatingSystemValid returns true if the user agent's operating system is valid
+func (ua *UserAgent) IsOperatingSystemValid() bool {
+	return ua.operatingSystemCheck
+}
+
+// IsDeviceValid returns true if the user agent's device is valid
+func (ua *UserAgent) IsDeviceValid() bool {
+	return ua.deviceCheck
+}
+
+// IsMobile returns true if the user agent is a mobile device
+func (ua *UserAgent) IsMobile() bool {
+	return ua.deviceType == "mobile"
+}
+
+// IsTablet returns true if the user agent is a tablet device
+func (ua *UserAgent) IsTablet() bool {
+	return ua.deviceType == "tablet"
+}
+
+// IsDesktop returns true if the user agent is a desktop device
+func (ua *UserAgent) IsDesktop() bool {
+	return ua.deviceType == "desktop"
+}
+
+// IsWindows returns true if the user agent is a Windows device
+func (ua *UserAgent) IsWindows() bool {
+	return ua.operatingSystem == "windows"
+}
+
+// IsLinux returns true if the user agent is a Linux device
+func (ua *UserAgent) IsLinux() bool {
+	return ua.operatingSystem == "linux"
+}
+
+// IsMacOS returns true if the user agent is a MacOS device
+func (ua *UserAgent) IsMacOS() bool {
+	return ua.operatingSystem == "macos"
+}
+
+// IsAndroid returns true if the user agent is an Android device
+func (ua *UserAgent) IsAndroid() bool {
+	return ua.operatingSystem == "android"
+}
+
+// IsIOS returns true if the user agent is an iOS device
+func (ua *UserAgent) IsIOS() bool {
+	return ua.operatingSystem == "ios"
 }
 
 var (
