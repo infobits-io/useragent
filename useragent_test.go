@@ -58,8 +58,8 @@ func TestParse(t *testing.T) {
 			if ua.OperatingSystem() != tc.os {
 				t.Errorf("expected OS %q, but got %q", tc.os, ua.OperatingSystem())
 			}
-			if ua.IsBot() != tc.isBot {
-				t.Errorf("expected isBot %v, but got %v", tc.isBot, ua.IsBot())
+			if ua.IsBot(true) != tc.isBot {
+				t.Errorf("expected isBot %v, but got %v", tc.isBot, ua.IsBot(true))
 			}
 		})
 	}
