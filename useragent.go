@@ -2,9 +2,9 @@ package useragent
 
 import (
 	"regexp"
-	"strings"
 )
 
+// UserAgent represents a parsed user agent string.
 type UserAgent struct {
 	userAgent            string
 	deviceType           string
@@ -16,19 +16,31 @@ type UserAgent struct {
 	deviceCheck          bool // check if the device is valid
 }
 
+// browserPattern holds a pre-compiled regex for matching a browser or bot.
+type browserPattern struct {
+	name  string
+	regex *regexp.Regexp
+	isBot bool
+}
+
+// devicePattern holds a pre-compiled regex for matching a device/OS.
+type devicePattern struct {
+	name  string
+	regex *regexp.Regexp
+	os    string
+}
+
+// Parse parses a user agent string and returns a UserAgent.
 func Parse(userAgent string) *UserAgent {
 	// Get the browser
 	browser := "unknown"
 	browserCheck := true
 
-	for _, browserMap := range browsers {
-		browserKey := browserMap[0]
-		browserRegExString := browserMap[1]
-
-		browserRegEx := regexp.MustCompile(`(?i)` + browserRegExString)
-		if browserRegEx.MatchString(userAgent) {
-			browser = browserKey
-			if strings.HasPrefix(browserKey, "[Bot]") {
+	for i := range browsers {
+		bp := &browsers[i]
+		if bp.regex.MatchString(userAgent) {
+			browser = bp.name
+			if bp.isBot {
 				browserCheck = false
 			}
 
@@ -40,14 +52,11 @@ func Parse(userAgent string) *UserAgent {
 	device := "unknown"
 	operatingSystem := "unknown"
 
-	for _, deviceMap := range devices {
-		deviceKey := deviceMap[0]
-		deviceRegExString := deviceMap[1]
-
-		deviceRegEx := regexp.MustCompile(`(?i)` + deviceRegExString)
-		if deviceRegEx.MatchString(userAgent) {
-			device = deviceKey
-			operatingSystem = deviceOperatingSystem[deviceKey]
+	for i := range devices {
+		dp := &devices[i]
+		if dp.regex.MatchString(userAgent) {
+			device = dp.name
+			operatingSystem = dp.os
 
 			break
 		}
@@ -181,145 +190,135 @@ func (ua *UserAgent) IsIOS() bool {
 	return ua.operatingSystem == "ios"
 }
 
+func compileBrowser(name, pattern string, isBot bool) browserPattern {
+	return browserPattern{
+		name:  name,
+		regex: regexp.MustCompile(`(?i)` + pattern),
+		isBot: isBot,
+	}
+}
+
+func compileDevice(name, pattern, os string) devicePattern {
+	return devicePattern{
+		name:  name,
+		regex: regexp.MustCompile(`(?i)` + pattern),
+		os:    os,
+	}
+}
+
 var (
 	mobileCheckRegEx = regexp.MustCompile(
-		"(?i)/Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune/",
+		`(?i)Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|NetFront|` +
+			`Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune`,
 	)
-	tabletCheckRegEx = regexp.MustCompile("(?i)(tablet|ipad|playbook)|.*mobile.*android.*")
-	devices          = [][]string{
-		{"Windows 3.11", "Win16"},
-		{"Windows 95", "(Windows 95)|(Win95)|(Windows_95)"},
-		{"Windows 98", "(Windows 98)|(Win98)"},
-		{"Windows 2000", "(Windows NT 5.0)|(Windows 2000)"},
-		{"Windows XP", "(Windows NT 5.1)|(Windows XP)"},
-		{"Windows Server 2003", "(Windows NT 5.2)"},
-		{"Windows Vista", "(Windows NT 6.0)"},
-		{"Windows 7", "(Windows NT 6.1)"},
-		{"Windows 8", "(Windows NT 6.2)|(WOW64)"},
-		{"Windows 10", "(Windows 10.0)|(Windows NT 10.0)"},
-		{"Windows NT 4.0", "(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)"},
-		{"Windows ME", "Windows ME"},
-		{"Windows Phone", "Windows Phone"},
-		{"Open BSD", "OpenBSD"},
-		{"FreeBSD", "FreeBSD"},
-		{"NetBSD", "NetBSD"},
-		{"Solaris", "Solaris|SunOS"},
-		{"Android", "Android"},
-		{"Ubuntu", "Ubuntu"},
-		{"Suse", "Suse"},
-		{"Redhat", "Redhat"},
-		{"Fedora", "Fedora"},
-		{"Centos", "Centos"},
-		{"Linux", "(Linux)|(X11)"},
-		{"Mac OS", "(Mac_PowerPC)|(Macintosh)"},
-		{"Chrome OS", "CrOS"},
-		{"BlackBerry", "BlackBerry"},
-		{"QNX", "QNX"},
-		{"BeOS", "BeOS"},
-		{"OS/2", "OS/2"},
-		{"iPhone", "iPhone"},
-		{"iPad", "iPad"},
-		{"iPod", "iPod"},
-		{
-			"Search Bot",
-			"(nuhk)|(Googlebot)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves/Teoma)" +
-				"|(ia_archiver)|(Baiduspider)|(FacebookExternalHit)|(Twitterbot)|(Riddler)" +
-				"|(LinkedInBot)|(Instagram)|(Pinterest)|(chatgpt)|(openai)|(bingbot)" +
-				"|(duckduckbot)|(yandexbot)|(snapchat)|(discordbot)",
-		},
+	tabletCheckRegEx = regexp.MustCompile(`(?i)(tablet|ipad|playbook)|.*mobile.*android.*`)
+
+	devices = [...]devicePattern{
+		compileDevice("Windows 3.11", `Win16`, "windows"),
+		compileDevice("Windows 95", `(Windows 95)|(Win95)|(Windows_95)`, "windows"),
+		compileDevice("Windows 98", `(Windows 98)|(Win98)`, "windows"),
+		compileDevice("Windows 2000", `(Windows NT 5.0)|(Windows 2000)`, "windows"),
+		compileDevice("Windows XP", `(Windows NT 5.1)|(Windows XP)`, "windows"),
+		compileDevice("Windows Server 2003", `(Windows NT 5.2)`, "windows"),
+		compileDevice("Windows Vista", `(Windows NT 6.0)`, "windows"),
+		compileDevice("Windows 7", `(Windows NT 6.1)`, "windows"),
+		compileDevice("Windows 8", `(Windows NT 6.2)`, "windows"),
+		compileDevice("Windows 10", `(Windows 10.0)|(Windows NT 10.0)`, "windows"),
+		compileDevice("Windows NT 4.0", `(Windows NT 4.0)|(WinNT4.0)|(WinNT)|(Windows NT)`, "windows"),
+		compileDevice("Windows ME", `Windows ME`, "windows"),
+		compileDevice("Windows Phone", `Windows Phone`, "windows"),
+		compileDevice("Open BSD", `OpenBSD`, "linux"),
+		compileDevice("FreeBSD", `FreeBSD`, "linux"),
+		compileDevice("NetBSD", `NetBSD`, "linux"),
+		compileDevice("Solaris", `Solaris|SunOS`, "linux"),
+		compileDevice("Android", `Android`, "android"),
+		compileDevice("Ubuntu", `Ubuntu`, "ubuntu"),
+		compileDevice("Suse", `Suse`, "suse"),
+		compileDevice("Redhat", `Redhat`, "redhat"),
+		compileDevice("Fedora", `Fedora`, "fedora"),
+		compileDevice("Centos", `Centos`, "centos"),
+		compileDevice("Chrome OS", `CrOS`, "chromeos"),
+		compileDevice("Linux", `(Linux)|(X11)`, "linux"),
+		compileDevice("Mac OS", `(Mac_PowerPC)|(Macintosh)`, "macos"),
+		compileDevice("BlackBerry", `BlackBerry`, "blackberry"),
+		compileDevice("QNX", `QNX`, "qnx"),
+		compileDevice("BeOS", `BeOS`, "beos"),
+		compileDevice("OS/2", `OS/2`, "os2"),
+		compileDevice("iPhone", `iPhone`, "ios"),
+		compileDevice("iPad", `iPad`, "ios"),
+		compileDevice("iPod", `iPod`, "ios"),
+		compileDevice("Search Bot",
+			`(nuhk)|(Googlebot)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves/Teoma)`+
+				`|(ia_archiver)|(Baiduspider)|(FacebookExternalHit)|(Twitterbot)|(Riddler)`+
+				`|(LinkedInBot)|(Instagram)|(Pinterest)|(chatgpt)|(openai)|(bingbot)`+
+				`|(duckduckbot)|(yandexbot)|(snapchat)|(discordbot)`+
+				`|(claudebot)|(gptbot)|(perplexitybot)|(bytespider)|(petalbot)|(applebot)|(amazonbot)`,
+			"bot"),
 	}
-	deviceOperatingSystem = map[string]string{
-		"Windows 3.11":        "windows",
-		"Windows 95":          "windows",
-		"Windows 98":          "windows",
-		"Windows 2000":        "windows",
-		"Windows XP":          "windows",
-		"Windows Server 2003": "windows",
-		"Windows Vista":       "windows",
-		"Windows 7":           "windows",
-		"Windows 8":           "windows",
-		"Windows 10":          "windows",
-		"Windows NT 4.0":      "windows",
-		"Windows ME":          "windows",
-		"Open BSD":            "linux",
-		"FreeBSD":             "linux",
-		"NetBSD":              "linux",
-		"Solaris":             "linux",
-		"Android":             "android",
-		"Ubuntu":              "ubuntu",
-		"Suse":                "suse",
-		"Redhat":              "redhat",
-		"Fedora":              "fedora",
-		"Centos":              "centos",
-		"Linux":               "linux",
-		"Mac OS":              "macos",
-		"Chrome OS":           "chromeos",
-		"BlackBerry":          "blackberry",
-		"QNX":                 "qnx",
-		"BeOS":                "beos",
-		"OS/2":                "os2",
-		"iPhone":              "ios",
-		"iPad":                "ios",
-		"iPod":                "ios",
-		"Search Bot":          "bot",
-	}
-	browsers = [][]string{
+
+	browsers = [...]browserPattern{
 		// Browsers
-		{"DuckDuckGo", "ddg"},
-		{"Brave", "brave"},
-		{"Samsung Internet", "samsungbrowser"},
-		{"UC Browser", "ucbrowser"},
-		{"Opera Mini", "opera mini"},
-		{"Opera Mobile", "opera mobi"},
-		{"Yandex", "yabrowser"},
-		{"360 Safe", "360ee"},
-		{"Vivaldi", "vivaldi"},
-		{"Tor Browser", "tor"},
-		{"Lynx", "lynx"},
-		{"SeaMonkey", "seamonkey"},
-		{"Pale Moon", "palemoon"},
-		{"Midori", "midori"},
-		{"Avast Secure Browser", "avast"},
-		{"Opera", "(opera)|(opr/)"},
-		{"Edge", "(edge)|(edg)"},
-		{"Chrome", "(chrome)|(crios)"},
-		{"Safari", "safari"},
-		{"Firefox", "firefox"},
-		{"Internet Explorer", "(msie)|(trident/7)"},
+		compileBrowser("DuckDuckGo", `ddg`, false),
+		compileBrowser("Brave", `brave`, false),
+		compileBrowser("Samsung Internet", `samsungbrowser`, false),
+		compileBrowser("UC Browser", `ucbrowser`, false),
+		compileBrowser("Opera Mini", `opera mini`, false),
+		compileBrowser("Opera Mobile", `opera mobi`, false),
+		compileBrowser("Yandex", `yabrowser`, false),
+		compileBrowser("360 Safe", `360ee`, false),
+		compileBrowser("Vivaldi", `vivaldi`, false),
+		compileBrowser("Arc", `arc/`, false),
+		compileBrowser("Opera GX", `oprgx`, false),
+		compileBrowser("Tor Browser", `tor`, false),
+		compileBrowser("Lynx", `lynx`, false),
+		compileBrowser("SeaMonkey", `seamonkey`, false),
+		compileBrowser("Pale Moon", `palemoon`, false),
+		compileBrowser("Midori", `midori`, false),
+		compileBrowser("Avast Secure Browser", `avast`, false),
+		compileBrowser("Opera", `(opera)|(opr/)`, false),
+		compileBrowser("Edge", `(edge)|(edg)`, false),
+		compileBrowser("Chrome", `(chrome)|(crios)`, false),
+		compileBrowser("Safari", `safari`, false),
+		compileBrowser("Firefox", `firefox`, false),
+		compileBrowser("Internet Explorer", `(msie)|(trident/7)`, false),
 		// Search Engines
-		{"[Bot] Googlebot", "google"},
-		{"[Bot] Bingbot", "bing"},
-		{"[Bot] Yahoo! Slurp", "slurp"},
-		{"[Bot] DuckDuckBot", "(duckduckgo)|(duckduckbot)"},
-		{"[Bot] Baidu", "baidu"},
-		{"[Bot] Yandex", "yandex"},
-		{"[Bot] Sogou", "sogou"},
-		{"[Bot] Exabot", "exabot"},
-		{"[Bot] MSN", "msn"},
+		compileBrowser("[Bot] Googlebot", `google`, true),
+		compileBrowser("[Bot] Bingbot", `bing`, true),
+		compileBrowser("[Bot] Yahoo! Slurp", `slurp`, true),
+		compileBrowser("[Bot] DuckDuckBot", `(duckduckgo)|(duckduckbot)`, true),
+		compileBrowser("[Bot] Baidu", `baidu`, true),
+		compileBrowser("[Bot] Yandex", `yandex`, true),
+		compileBrowser("[Bot] Sogou", `sogou`, true),
+		compileBrowser("[Bot] Exabot", `exabot`, true),
+		compileBrowser("[Bot] MSN", `msn`, true),
 		// Chat bots
-		{"[Bot] ChatGPT", "chatgpt"},
-		{"[Bot] OpenAI", "openai"},
-
+		compileBrowser("[Bot] ChatGPT", `chatgpt`, true),
+		compileBrowser("[Bot] ClaudeBot", `claudebot`, true),
+		compileBrowser("[Bot] GPTBot", `gptbot`, true),
+		compileBrowser("[Bot] PerplexityBot", `perplexitybot`, true),
+		compileBrowser("[Bot] OpenAI", `openai`, true),
 		// Social Media
-		{"[Bot] Facebook", "facebook"},
-		{"[Bot] Pinterest", "pinterest"},
-		{"[Bot] LinkedInBot", "linkedin"},
-		{"[Bot] Instagram", "instagram"},
-		{"[Bot] Twitterbot", "twitter"},
-		{"[Bot] Snapchat", "snapchat"},
-		{"[Bot] Discord", "discord"},
+		compileBrowser("[Bot] Facebook", `facebook`, true),
+		compileBrowser("[Bot] Pinterest", `pinterest`, true),
+		compileBrowser("[Bot] LinkedInBot", `linkedin`, true),
+		compileBrowser("[Bot] Instagram", `instagram`, true),
+		compileBrowser("[Bot] Twitterbot", `twitter`, true),
+		compileBrowser("[Bot] Snapchat", `snapchat`, true),
+		compileBrowser("[Bot] Discord", `discord`, true),
 		// Common Tools and Bots
-		{"[Bot] Majestic", "mj12bot"},
-		{"[Bot] Ahrefs", "ahrefs"},
-		{"[Bot] SEMRush", "semrush"},
-		{"[Bot] Moz or OpenSiteExplorer", "(rogerbot)|(dotbot)"},
-		{"[Bot] Screaming Frog", "(frog)|(screaming)"},
-		{"[Bot] Pingdom", "pingdom"},
-		{"[Bot] Riddler", "riddler"},
-		{"[Bot] W3C Validator", "w3c_validator"},
-		// Miscellaneous
-
+		compileBrowser("[Bot] Bytespider", `bytespider`, true),
+		compileBrowser("[Bot] PetalBot", `petalbot`, true),
+		compileBrowser("[Bot] Applebot", `applebot`, true),
+		compileBrowser("[Bot] Amazon", `amazonbot`, true),
+		compileBrowser("[Bot] Majestic", `mj12bot`, true),
+		compileBrowser("[Bot] Ahrefs", `ahrefs`, true),
+		compileBrowser("[Bot] SEMRush", `semrush`, true),
+		compileBrowser("[Bot] Moz or OpenSiteExplorer", `(rogerbot)|(dotbot)`, true),
+		compileBrowser("[Bot] Screaming Frog", `(frog)|(screaming)`, true),
+		compileBrowser("[Bot] Pingdom", `pingdom`, true),
+		compileBrowser("[Bot] Riddler", `riddler`, true),
+		compileBrowser("[Bot] W3C Validator", `w3c_validator`, true),
 		// Check for strings commonly used in bot user agents
-		{"[Bot] Other", "(crawler)|(api)|(spider)|(http)|(bot)|(archive)|(info)|(data)"},
+		compileBrowser("[Bot] Other", `(crawler)|(api)|(spider)|(http)|(bot)|(archive)|(info)|(data)`, true),
 	}
 )
