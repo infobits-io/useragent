@@ -1,10 +1,13 @@
-.PHONY: lint test build
+.PHONY: lint test bench build
 
 lint:
 	golangci-lint run ./...
 
 test:
 	go test -v -race ./...
+
+bench:
+	go test -bench=. -benchmem ./...
 
 build:
 	go build ./...
