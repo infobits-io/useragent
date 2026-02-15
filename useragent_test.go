@@ -43,21 +43,29 @@ func TestParse(t *testing.T) {
 		},
 	}
 
+	t.Parallel()
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ua := Parse(tc.userAgent)
 			if ua.DeviceType() != tc.deviceType {
 				t.Errorf("expected device type %q, but got %q", tc.deviceType, ua.DeviceType())
 			}
+
 			if ua.Browser() != tc.browser {
 				t.Errorf("expected browser %q, but got %q", tc.browser, ua.Browser())
 			}
+
 			if ua.Device() != tc.device {
 				t.Errorf("expected device %q, but got %q", tc.device, ua.Device())
 			}
+
 			if ua.OperatingSystem() != tc.os {
 				t.Errorf("expected OS %q, but got %q", tc.os, ua.OperatingSystem())
 			}
+
 			if ua.IsBot(true) != tc.isBot {
 				t.Errorf("expected isBot %v, but got %v", tc.isBot, ua.IsBot(true))
 			}

@@ -20,15 +20,18 @@ func Parse(userAgent string) *UserAgent {
 	// Get the browser
 	browser := "unknown"
 	browserCheck := true
+
 	for _, browserMap := range browsers {
 		browserKey := browserMap[0]
 		browserRegExString := browserMap[1]
+
 		browserRegEx := regexp.MustCompile(`(?i)` + browserRegExString)
 		if browserRegEx.MatchString(userAgent) {
 			browser = browserKey
 			if strings.HasPrefix(browserKey, "[Bot]") {
 				browserCheck = false
 			}
+
 			break
 		}
 	}
@@ -36,13 +39,16 @@ func Parse(userAgent string) *UserAgent {
 	// Get the device
 	device := "unknown"
 	operatingSystem := "unknown"
+
 	for _, deviceMap := range devices {
 		deviceKey := deviceMap[0]
 		deviceRegExString := deviceMap[1]
+
 		deviceRegEx := regexp.MustCompile(`(?i)` + deviceRegExString)
 		if deviceRegEx.MatchString(userAgent) {
 			device = deviceKey
 			operatingSystem = deviceOperatingSystem[deviceKey]
+
 			break
 		}
 	}
@@ -50,12 +56,15 @@ func Parse(userAgent string) *UserAgent {
 	// Check for bot indicators
 	operatingSystemCheck := true
 	deviceCheck := true
+
 	if operatingSystem == "bot" || operatingSystem == "unknown" {
 		operatingSystemCheck = false
 	}
+
 	if browser == "unknown" {
 		browserCheck = false
 	}
+
 	if device == "unknown" {
 		deviceCheck = false
 	}
@@ -81,99 +90,101 @@ func Parse(userAgent string) *UserAgent {
 	}
 }
 
-// UserAgent returns the user agent string
+// UserAgent returns the user agent string.
 func (ua *UserAgent) UserAgent() string {
 	return ua.userAgent
 }
 
-// DeviceType returns the device type of the user agent
+// DeviceType returns the device type of the user agent.
 func (ua *UserAgent) DeviceType() string {
 	return ua.deviceType
 }
 
-// Browser returns the browser of the user agent
+// Browser returns the browser of the user agent.
 func (ua *UserAgent) Browser() string {
 	return ua.browser
 }
 
-// Device returns the device of the user agent
+// Device returns the device of the user agent.
 func (ua *UserAgent) Device() string {
 	return ua.device
 }
 
-// OperatingSystem returns the operating system of the user agent
+// OperatingSystem returns the operating system of the user agent.
 func (ua *UserAgent) OperatingSystem() string {
 	return ua.operatingSystem
 }
 
 // IsBot returns true if the user agent is a bot.
-// If includeBrowser is true, the browser is also checked
+// If includeBrowser is true, the browser is also checked.
 func (ua *UserAgent) IsBot(includeBrowser bool) bool {
 	return (!ua.browserCheck && includeBrowser) || !ua.operatingSystemCheck || !ua.deviceCheck
 }
 
-// IsValid returns true if the user agent is not a bot
+// IsValid returns true if the user agent is not a bot.
 func (ua *UserAgent) IsValid() bool {
 	return ua.browserCheck && ua.operatingSystemCheck && ua.deviceCheck
 }
 
-// IsBrowserValid returns true if the user agent's browser is valid
+// IsBrowserValid returns true if the user agent's browser is valid.
 func (ua *UserAgent) IsBrowserValid() bool {
 	return ua.browserCheck
 }
 
-// IsOperatingSystemValid returns true if the user agent's operating system is valid
+// IsOperatingSystemValid returns true if the user agent's operating system is valid.
 func (ua *UserAgent) IsOperatingSystemValid() bool {
 	return ua.operatingSystemCheck
 }
 
-// IsDeviceValid returns true if the user agent's device is valid
+// IsDeviceValid returns true if the user agent's device is valid.
 func (ua *UserAgent) IsDeviceValid() bool {
 	return ua.deviceCheck
 }
 
-// IsMobile returns true if the user agent is a mobile device
+// IsMobile returns true if the user agent is a mobile device.
 func (ua *UserAgent) IsMobile() bool {
 	return ua.deviceType == "mobile"
 }
 
-// IsTablet returns true if the user agent is a tablet device
+// IsTablet returns true if the user agent is a tablet device.
 func (ua *UserAgent) IsTablet() bool {
 	return ua.deviceType == "tablet"
 }
 
-// IsDesktop returns true if the user agent is a desktop device
+// IsDesktop returns true if the user agent is a desktop device.
 func (ua *UserAgent) IsDesktop() bool {
 	return ua.deviceType == "desktop"
 }
 
-// IsWindows returns true if the user agent is a Windows device
+// IsWindows returns true if the user agent is a Windows device.
 func (ua *UserAgent) IsWindows() bool {
 	return ua.operatingSystem == "windows"
 }
 
-// IsLinux returns true if the user agent is a Linux device
+// IsLinux returns true if the user agent is a Linux device.
 func (ua *UserAgent) IsLinux() bool {
 	return ua.operatingSystem == "linux"
 }
 
-// IsMacOS returns true if the user agent is a MacOS device
+// IsMacOS returns true if the user agent is a MacOS device.
 func (ua *UserAgent) IsMacOS() bool {
 	return ua.operatingSystem == "macos"
 }
 
-// IsAndroid returns true if the user agent is an Android device
+// IsAndroid returns true if the user agent is an Android device.
 func (ua *UserAgent) IsAndroid() bool {
 	return ua.operatingSystem == "android"
 }
 
-// IsIOS returns true if the user agent is an iOS device
+// IsIOS returns true if the user agent is an iOS device.
 func (ua *UserAgent) IsIOS() bool {
 	return ua.operatingSystem == "ios"
 }
 
 var (
-	mobileCheckRegEx = regexp.MustCompile("(?i)/Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune/")
+	mobileCheckRegEx = regexp.MustCompile(
+		"(?i)/Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune/",
+	)
 	tabletCheckRegEx = regexp.MustCompile("(?i)(tablet|ipad|playbook)|.*mobile.*android.*")
 	devices          = [][]string{
 		{"Windows 3.11", "Win16"},
@@ -209,7 +220,13 @@ var (
 		{"iPhone", "iPhone"},
 		{"iPad", "iPad"},
 		{"iPod", "iPod"},
-		{"Search Bot", "(nuhk)|(Googlebot)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves/Teoma)|(ia_archiver)|(Baiduspider)|(FacebookExternalHit)|(Twitterbot)|(Riddler)|(LinkedInBot)|(Instagram)|(Pinterest)|(chatgpt)|(openai)|(bingbot)|(duckduckbot)|(yandexbot)|(snapchat)|(discordbot)"},
+		{
+			"Search Bot",
+			"(nuhk)|(Googlebot)|(Yammybot)|(Openbot)|(Slurp)|(MSNBot)|(Ask Jeeves/Teoma)" +
+				"|(ia_archiver)|(Baiduspider)|(FacebookExternalHit)|(Twitterbot)|(Riddler)" +
+				"|(LinkedInBot)|(Instagram)|(Pinterest)|(chatgpt)|(openai)|(bingbot)" +
+				"|(duckduckbot)|(yandexbot)|(snapchat)|(discordbot)",
+		},
 	}
 	deviceOperatingSystem = map[string]string{
 		"Windows 3.11":        "windows",
