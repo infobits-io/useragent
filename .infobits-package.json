@@ -1,0 +1,18 @@
+{
+	"slug": "useragent",
+	"category": "go",
+	"install": "go get packages.infobits.io/go/useragent",
+	"packageManager": {
+		"name": "pkg.go.dev",
+		"url": "https://pkg.go.dev/packages.infobits.io/go/useragent"
+	},
+	"descriptions": {
+		"en": "A Go package for parsing and analyzing user agent strings",
+		"da": "En Go-pakke til at parse og analysere user agent-strenge",
+		"de": "Ein Go-Paket zum Parsen und Analysieren von User-Agent-Strings",
+		"es": "Un paquete de Go para analizar cadenas de agente de usuario",
+		"fr": "Un package Go pour analyser les chaînes d'agent utilisateur",
+		"it": "Un pacchetto Go per analizzare le stringhe user agent",
+		"nl": "Een Go-pakket voor het parsen en analyseren van user-agentstrings"
+	}
+}
